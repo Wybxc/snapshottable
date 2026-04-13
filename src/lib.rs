@@ -27,8 +27,12 @@
 //! # References
 //!
 //! 1. C. Allain, B. Clément, A. Moine, and G. Scherer, “Snapshottable stores,” Proc, ACM Program, Lang, vol. 8, no. ICFP, p. 248:338-248:369, Aug. 2024, doi: [10.1145/3674637](https://dl.acm.org/doi/10.1145/3674637).
+#![no_std]
 
-use std::{cell::Cell, rc::Rc, sync::atomic::AtomicUsize};
+extern crate alloc;
+
+use alloc::{boxed::Box, rc::Rc, vec};
+use core::{cell::Cell, sync::atomic::AtomicUsize};
 
 /// A bag of mutable objects (references) with snapshot and restore capabilities.
 pub struct Store {
@@ -45,7 +49,7 @@ impl Store {
         Store {
             root: Node(Rc::new(Cell::new(NodeData::Mem))),
             generation: 0,
-            store_id: STORE_ID_COUNTER.fetch_add(1, std::sync::atomic::Ordering::SeqCst),
+            store_id: STORE_ID_COUNTER.fetch_add(1, core::sync::atomic::Ordering::SeqCst),
         }
     }
 
@@ -55,7 +59,7 @@ impl Store {
             r.0.value.set(value);
         } else {
             let new_root = Node(Rc::new(Cell::new(NodeData::Mem)));
-            let old_root = std::mem::replace(&mut self.root, new_root.clone());
+            let old_root = core::mem::replace(&mut self.root, new_root.clone());
             old_root.0.replace(NodeData::Diff(Box::new(Diff {
                 r: r.clone(),
                 value: r.0.value.replace(value),
