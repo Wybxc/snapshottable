@@ -85,6 +85,7 @@ impl Store {
         if snap.store_id != self.store_id {
             panic!("Cannot restore from a snapshot from a different store");
         }
+        // SAFETY: There are no mutable references to the store's internal graph.
         if let NodeData::Mem = unsafe { &*snap.root.0.as_ptr() } {
             return;
         }
@@ -197,6 +198,7 @@ impl<T: 'static + Clone> ReRoot for Diff<T> {
 fn reroot(mut n: &Node) {
     let mut stack = vec![];
     loop {
+        // SAFETY: There are no mutable references to the store's internal graph.
         match unsafe { &*n.0.as_ptr() } {
             NodeData::Mem => break,
             NodeData::Diff(diff) => {
