@@ -112,12 +112,8 @@ impl<T> Ref<T> {
     where
         T: Clone,
     {
+        // SAFETY: There are no mutable references to Ref's internal cell.
         unsafe { &*self.0.value.as_ptr() }.clone()
-    }
-
-    /// Executes the provided closure with the current value of this reference.
-    pub fn with<R>(&self, f: impl FnOnce(&T) -> R) -> R {
-        f(unsafe { &*self.0.value.as_ptr() })
     }
 
     /// Sets the value of this reference in the provided `Store`.
