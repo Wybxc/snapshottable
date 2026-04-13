@@ -107,12 +107,17 @@ impl<T> Ref<T> {
         }))
     }
 
-    /// Fetches the observed current value.
+    /// Fetches and clones the current value of this reference.
     pub fn get(&self) -> T
     where
         T: Clone,
     {
         unsafe { &*self.0.value.as_ptr() }.clone()
+    }
+
+    /// Executes the provided closure with the current value of this reference.
+    pub fn with<R>(&self, f: impl FnOnce(&T) -> R) -> R {
+        f(unsafe { &*self.0.value.as_ptr() })
     }
 
     /// Sets the value of this reference in the provided `Store`.
