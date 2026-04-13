@@ -23,6 +23,10 @@
 //! On this path, it applies the stored inverse diffs, pulling the old values
 //! back into the references' active memory, while concurrently reversing the
 //! graph pointers to make the snapshot node the new active current node.
+//!
+//! # References
+//!
+//! 1. C. Allain, B. Clément, A. Moine, and G. Scherer, “Snapshottable stores,” Proc, ACM Program, Lang, vol. 8, no. ICFP, p. 248:338-248:369, Aug. 2024, doi: [10.1145/3674637](https://dl.acm.org/doi/10.1145/3674637).
 
 use std::{cell::Cell, rc::Rc, sync::atomic::AtomicUsize};
 
