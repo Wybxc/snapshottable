@@ -11,4 +11,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- add CI and release workflows for automated testing and deployment
+- Nothing new. This release is to verify the automated testing and deployment pipeline.
