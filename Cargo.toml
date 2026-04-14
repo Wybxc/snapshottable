@@ -1,7 +1,11 @@
 [package]
 name = "snapshottable"
+description = "A store of mutable references that can be captured and restored efficiently."
+authors = ["Wybxc <wybxc@qq.com>"]
 version = "0.1.0"
 edition = "2024"
 license = "Apache-2.0"
+documentation = "https://docs.rs/snapshottable"
+repository = "https://github.com/Wybxc/snapshottable"
 
 [dependencies]
