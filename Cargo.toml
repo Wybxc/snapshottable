@@ -2,7 +2,7 @@
 name = "snapshottable"
 description = "A store of mutable references that can be captured and restored efficiently."
 authors = ["Wybxc <wybxc@qq.com>"]
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 license = "Apache-2.0"
 documentation = "https://docs.rs/snapshottable"
