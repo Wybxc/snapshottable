@@ -3,8 +3,15 @@
 
 extern crate alloc;
 
-use alloc::{boxed::Box, rc::Rc, vec};
-use core::{cell::Cell, sync::atomic::AtomicUsize};
+use alloc::{
+    boxed::Box,
+    rc::{Rc, Weak},
+    vec,
+};
+use core::{
+    cell::{Cell, RefCell},
+    sync::atomic::AtomicUsize,
+};
 
 /// A bag of mutable objects (references) with snapshot and restore capabilities.
 pub struct Store {
@@ -28,7 +35,7 @@ impl Store {
     /// Sets the value of a reference `r` inside this store.
     pub fn set<T: 'static + Clone>(&mut self, r: &Ref<T>, value: T) {
         if self.generation == r.0.generation.get() {
-            r.0.value.set(value);
+            r.0.value.replace(value);
         } else {
             let new_root = Node(Rc::new(Cell::new(NodeData::Mem)));
             let old_root = core::mem::replace(&mut self.root, new_root.clone());
@@ -78,7 +85,7 @@ impl<T> Ref<T> {
     /// Creates a new, detached reference wrapping the given `value`.
     pub fn new(value: T) -> Self {
         Ref(Rc::new(RefInner {
-            value: Cell::new(value),
+            value: RefCell::new(value),
             generation: Cell::new(0),
         }))
     }
@@ -88,8 +95,12 @@ impl<T> Ref<T> {
     where
         T: Clone,
     {
-        // SAFETY: There are no mutable references to Ref's internal cell.
-        unsafe { &*self.0.value.as_ptr() }.clone()
+        self.borrow().clone()
+    }
+
+    /// Borrows the current value of this reference.
+    pub fn borrow(&self) -> core::cell::Ref<'_, T> {
+        self.0.value.borrow()
     }
 
     /// Sets the value of this reference in the provided `Store`.
@@ -98,6 +109,11 @@ impl<T> Ref<T> {
         T: Clone + 'static,
     {
         store.set(self, value);
+    }
+
+    /// Creates a weak reference to this reference.
+    pub fn downgrade(this: &Self) -> WeakRef<T> {
+        WeakRef(Rc::downgrade(&this.0))
     }
 }
 
@@ -108,8 +124,24 @@ impl<T> Clone for Ref<T> {
 }
 
 struct RefInner<T> {
-    value: Cell<T>,
+    value: RefCell<T>,
     generation: Cell<usize>,
+}
+
+/// Weak reference version of [`Ref`], like [`Weak`] is to [`Rc`].
+pub struct WeakRef<T>(Weak<RefInner<T>>);
+
+impl<T> WeakRef<T> {
+    /// Attempts to upgrade this weak reference to a strong one.
+    pub fn upgrade(&self) -> Option<Ref<T>> {
+        self.0.upgrade().map(Ref)
+    }
+}
+
+impl<T> Clone for WeakRef<T> {
+    fn clone(&self) -> Self {
+        WeakRef(self.0.clone())
+    }
 }
 
 /// An opaque handle recording a captured version of the store references.
